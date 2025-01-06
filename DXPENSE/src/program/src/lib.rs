@@ -16,3 +16,5 @@ fn process_instruction(
     msg!("Hello Solana! (From Rust!)");
     Ok(())
 }
+
+fn distribute(_program_id: &Pubkey, _accounts: &[AccountInfo], )
