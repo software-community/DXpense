@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/mkapil/blockchain/dxpense_sol/contracts/Dxpense.sol": {
-      "lastModificationDate": 1743276143845,
-      "contentHash": "bcd820050059b71e426773f5b9b545f3",
+      "lastModificationDate": 1743278672745,
+      "contentHash": "98a452365f8b95af4a053a8481ef749e",
       "sourceName": "contracts/Dxpense.sol",
       "solcConfig": {
         "version": "0.8.28",

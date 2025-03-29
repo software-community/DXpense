@@ -20,6 +20,7 @@ function App() {
   useEffect(() => {
 
     const initialize_contract = async () => {
+      console.log(process.env.REACT_APP_CONTRACT_ADDRESS)
       provider = new BrowserProvider(window.ethereum);
       signer = await provider.getSigner();
       contract = new Contract(

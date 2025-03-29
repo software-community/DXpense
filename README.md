@@ -66,6 +66,19 @@ Dxpense is a decentralized application (dApp) that allows users to manage their 
 
 ## Contributing
 Contributions are welcome! If you have suggestions or find any issues, feel free to open an issue or submit a pull request.
+### Smart Contract:
+Navigate to the contracts directory and open Dxpense.sol to make changes to the smart contract. The following steps need to be followed in order for the changes to be reflected on the frontend: 
+1. Compile the smart contract:
+    ```
+    npx hardhat compile
+    ```
+2. Deploy the smart contract: 
+    ```
+    npx hardhat ignition deploy ./ignition/modules/Dxpense.js --network localhost --reset
+    ```
+3. Add the deployment address to the .env file in the src folder of the client directory
+4. Update the smart contract ABI file. Navigate to the artifacts/contracts/Dxpense.sol/Dxpense.json file and copy the abi array. Paste it into the Lock.json file in the src folder of the client directory.
+5. Finally, restart the react server using npm start.
 
 ## License
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
