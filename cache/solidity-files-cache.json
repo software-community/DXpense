@@ -1,10 +1,10 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/home/mkapil/blockchain/dxpense_sol/contracts/Lock.sol": {
-      "lastModificationDate": 1743273685077,
-      "contentHash": "4ecf3ebbe9c3c4b232d1b1ea5a30a6c0",
-      "sourceName": "contracts/Lock.sol",
+    "/home/mkapil/blockchain/dxpense_sol/contracts/Dxpense.sol": {
+      "lastModificationDate": 1743276143845,
+      "contentHash": "bcd820050059b71e426773f5b9b545f3",
+      "sourceName": "contracts/Dxpense.sol",
       "solcConfig": {
         "version": "0.8.28",
         "settings": {
@@ -34,7 +34,7 @@
         "^0.8.24"
       ],
       "artifacts": [
-        "Lock"
+        "Dxpense"
       ]
     }
   }

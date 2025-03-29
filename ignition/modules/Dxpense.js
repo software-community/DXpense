@@ -3,9 +3,9 @@
 
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 
-module.exports = buildModule("LockModule", (m) => {
+module.exports = buildModule("DxpenseModule", (m) => {
 
-  const lock = m.contract("Lock");
+  const dxpense = m.contract("Dxpense");
 
-  return { lock };
+  return { dxpense };
 });
