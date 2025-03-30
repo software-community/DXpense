@@ -71,11 +71,11 @@ Dxpense is a decentralized application (dApp) that allows users to manage their 
 
 9. The app will prompt you to install metamask, which is a wallet for ethereum based tokens. Install the browser extension for metamask and create an account.
 10. Inside metamask, click the networks dropdown->Add Custom Network and enter the following details: 
-Network Name: GoChain Testnet
-Default RPC Url: http://127.0.0.1:8545/
-Chain ID: 31337
-Currency Symbol: GO
-Once you've saved the network, switch to the GoChain Testnet network you just created.
+- Network Name: GoChain Testnet
+- Default RPC Url: http://127.0.0.1:8545/
+- Chain ID: 31337
+- Currency Symbol: GO
+- Once you've saved the network, switch to the GoChain Testnet network you just created.
 
 11. Now click the Account dropdown -> Import Account and enter the private key of one of the accounts that were created when you ran the "npx hardhat node" command. You'll find these accounts listed in the first terminal. After a minute or so you should see some money in this account.
 Now you're all set to interact with the app.
