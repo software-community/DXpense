@@ -29,25 +29,30 @@ Dxpense is a decentralized application (dApp) that allows users to manage their 
 1. Clone the repository:
    ```bash
    git clone https://github.com/software-community/DXpense.git
-   cd dxpense_sol
+   cd Dxpense
    ```
 
-2. Install dependencies:
+2. Switch to the master branch
+   ```bash
+   git checkout master
+   ```
+
+3. Install dependencies:
     ```
     npm install
     ```
 
-3. Deploy Smart Contract:
+4. Deploy Smart Contract:
     ```
     npx hardhat ignition deploy ./ignition/modules/Dxpense.js --network localhost
     ```
 
-4. Set up environment variables by creating a .env in the client directory and entering the following: 
+5. Set up environment variables by creating a .env in the client directory and entering the following: 
     ```
     REACT_APP_CONTRACT_ADDRESS=<Your_Contract_Address>
     ```
 
-5. Start the development server: 
+6. Start the development server: 
     ```
     cd client 
     npm start
