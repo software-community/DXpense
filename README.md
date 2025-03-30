@@ -42,26 +42,48 @@ Dxpense is a decentralized application (dApp) that allows users to manage their 
     npm install
     ```
 
-4. Deploy Smart Contract:
+3. Start a local node:
     ```
-    npx hardhat ignition deploy ./ignition/modules/Dxpense.js --network localhost
+    npx hardhat node
     ```
 
-5. Set up environment variables by creating a .env in the client directory and entering the following: 
+4. Deploy Smart Contract:
+   In a new terminal, enter: 
+    ```
+    npx hardhat ignition deploy ./ignition/modules/Dxpense.js --network localhost --reset
+    ```
+
+6. Set up environment variables by creating a .env in the client directory and entering the following: 
     ```
     REACT_APP_CONTRACT_ADDRESS=<Your_Contract_Address>
     ```
 
-6. Start the development server: 
+7. Install client side dependencies
     ```
     cd client 
-    npm start
+    npm install
     ```
+
+8. Run the app:
+      ```
+      npm start
+      ```
+
+9. The app will prompt you to install metamask, which is a wallet for ethereum based tokens. Install the browser extension for metamask and create an account.
+10. Inside metamask, click the networks dropdown->Add Custom Network and enter the following details: 
+Network Name: GoChain Testnet
+Default RPC Url: http://127.0.0.1:8545/
+Chain ID: 31337
+Currency Symbol: GO
+Once you've saved the network, switch to the GoChain Testnet network you just created.
+
+11. Now click the Account dropdown -> Import Account and enter the private key of one of the accounts that were created when you ran the "npx hardhat node" command. You'll find these accounts listed in the first terminal. After a minute or so you should see some money in this account.
+Now you're all set to interact with the app.
 
 ## Usage
 1. Open the application in your browser.
 2. Connect your MetaMask wallet.
-3. Interact with the dApp. Right now you can only add and view names stored in a list stored on the blockchain.
+3. Interact with the dApp. Right now you can only add and view names stored in a list stored on the blockchain. Enter your name and click the add name button. You will see your name appended at the end of the list of names once the transaction goes through and you refresh the page.
 
 ## Smart Contract Details
 - **Contract Name**: `Dxpense`
