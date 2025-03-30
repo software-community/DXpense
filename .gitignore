@@ -1,1 +1,8 @@
 node_modules
+coverage
+coverage.json
+typechain
+.env
+cache
+artifacts
+ignition/deployments/chain-31337
