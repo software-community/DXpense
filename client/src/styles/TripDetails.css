@@ -1,0 +1,505 @@
+.trip-details-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--spacing-lg);
+}
+
+.trip-details-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  position: relative;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  margin-right: var(--spacing-lg);
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.trip-details-title {
+  margin: 0;
+  font-size: 2rem;
+  color: var(--text-dark);
+}
+
+.trip-status-badge {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--background-light);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.trip-status-badge:not([data-status="settled"]) {
+  background-color: var(--primary-color);
+}
+
+.trip-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.trip-info-section,
+.trip-description-section,
+.trip-participants-section,
+.trip-expenses-section {
+  background-color: var(--background-light);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.trip-info-section h2,
+.trip-description-section h2,
+.trip-participants-section h2,
+.trip-expenses-section h2 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-dark);
+}
+
+.trip-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.trip-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.trip-info-label {
+  font-size: 0.875rem;
+  color: var(--text-medium);
+}
+
+.trip-info-value {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.trip-description-section p {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--text-dark);
+}
+
+/* Participants Table Styles */
+.participants-table-container {
+  overflow-x: auto;
+  margin-top: var(--spacing-md);
+}
+
+.participants-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.participants-table th {
+  background-color: var(--background-color);
+  padding: var(--spacing-md);
+  font-weight: 600;
+  color: var(--text-dark);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.participants-table td {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.participant-row:hover {
+  background-color: var(--background-color);
+}
+
+.participant-name-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.participant-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: var(--primary-color);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.participant-name-cell span {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.participant-paid-cell,
+.participant-owes-cell,
+.participant-balance-cell {
+  font-weight: 500;
+}
+
+.participant-balance-cell.positive {
+  color: var(--success-color);
+}
+
+.participant-balance-cell.negative {
+  color: var(--error-color);
+}
+
+/* Transactions Dropdown Styles */
+.transactions-dropdown {
+  position: relative;
+}
+
+.transactions-toggle {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 500;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.2s;
+}
+
+.transactions-toggle:hover {
+  background-color: var(--background-color);
+}
+
+.transactions-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: var(--background-light);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  width: 300px;
+  z-index: 10;
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-xs);
+}
+
+.transactions-dropdown:hover .transactions-content {
+  display: block;
+}
+
+.transactions-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.transactions-section h4 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-dark);
+  font-size: 0.9rem;
+}
+
+.transactions-section ul {
+  margin: 0;
+  padding-left: var(--spacing-md);
+  list-style-type: none;
+}
+
+.transactions-section li {
+  margin-bottom: var(--spacing-xs);
+  font-size: 0.875rem;
+  color: var(--text-medium);
+  line-height: 1.4;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: var(--spacing-md);
+  color: var(--text-medium);
+  font-style: italic;
+}
+
+.expenses-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.expense-card {
+  background-color: var(--background-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.expense-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.expense-description {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--text-dark);
+}
+
+.expense-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.expense-amount {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.expense-buttons {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: var(--background-light);
+}
+
+.btn-edit {
+  color: var(--primary-color);
+}
+
+.btn-delete {
+  color: var(--danger-color);
+}
+
+.expense-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-sm);
+  font-size: 0.875rem;
+  color: var(--text-medium);
+}
+
+.expense-details span {
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.no-expenses-message {
+  text-align: center;
+  padding: var(--spacing-lg);
+  color: var(--text-medium);
+  font-style: italic;
+}
+
+.trip-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: var(--text-medium);
+}
+
+.error-message {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--error-color);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.btn-sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: 0.875rem;
+}
+
+.add-participant-form {
+  background-color: var(--background-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.add-participant-form .form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.add-participant-form label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.add-participant-form input {
+  width: 100%;
+  padding: var(--spacing-sm);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+}
+
+.add-participant-form input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+.add-participant-form .form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.update-expenses-prompt {
+  background-color: var(--background-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+  border-left: 4px solid var(--primary-color);
+}
+
+.update-expenses-prompt h3 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-dark);
+}
+
+.update-expenses-prompt p {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-medium);
+}
+
+.prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.remove-participant-prompt {
+  background-color: var(--background-color);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-xs);
+  border-left: 4px solid var(--danger-color);
+}
+
+.remove-participant-prompt h3 {
+  margin-top: 0;
+  margin-bottom: var(--spacing-xs);
+  color: var(--text-dark);
+}
+
+.remove-participant-prompt p {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-medium);
+}
+
+.remove-participant-prompt .warning-text {
+  color: var(--danger-color);
+  font-weight: 500;
+}
+
+.participant-actions-cell {
+  width: 50px;
+  text-align: center;
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-dark);
+}
+
+@media (max-width: 768px) {
+  .trip-details-container {
+    padding: var(--spacing-md);
+  }
+  
+  .trip-details-title {
+    font-size: 1.5rem;
+  }
+  
+  .trip-status-badge {
+    position: static;
+    transform: none;
+    margin-left: var(--spacing-md);
+  }
+  
+  .trip-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .participants-table th:nth-child(2),
+  .participants-table th:nth-child(3),
+  .participants-table td:nth-child(2),
+  .participants-table td:nth-child(3) {
+    display: none;
+  }
+  
+  .expense-details {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .trip-actions {
+    flex-direction: column;
+  }
+  
+  .trip-actions button {
+    width: 100%;
+  }
+  
+  .transactions-content {
+    width: 250px;
+  }
+} 

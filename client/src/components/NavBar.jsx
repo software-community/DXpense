@@ -1,16 +1,42 @@
-import { Link } from "react-router-dom";
-import React from 'react'
+import { Link, useLocation } from "react-router-dom";
+import React from 'react';
+import ConnectWalletButton from './ConnectWalletButton';
+import '../styles/design-system.css';
+import '../styles/NavBar.css';
 
-const NavBar = () => {
+const NavBar = ({ account, setAccount }) => {
+  const location = useLocation();
+
+  const isActive = (path) => {
+    return location.pathname === path ? 'active' : '';
+  };
+
   return (
     <nav className="navbar">
-      <div className="nav-logo">dXpense</div>
-      <div className="nav-links">
-        <Link to="/" className="nav-link">Home</Link>
-        <Link to="/Login" className="nav-link">Login/Sign-up</Link>
+      <div className="navbar-container">
+        <Link to="/" className="nav-logo">
+          <div className="nav-logo-icon">dX</div>
+          <span>dXpense</span>
+        </Link>
+        
+        <div className="nav-links">
+          <Link 
+            to="/" 
+            className={`nav-link ${isActive('/')}`}
+          >
+            Home
+          </Link>
+          <Link 
+            to="/all-trips" 
+            className={`nav-link ${isActive('/all-trips')}`}
+          >
+            Active Trips
+          </Link>
+          <ConnectWalletButton setAccount={setAccount} />
+        </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default NavBar
+export default NavBar;
