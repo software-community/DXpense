@@ -1,6 +1,7 @@
 import React from "react";
 
 function ConnectWalletButton({ setAccount }) {
+  const [accounts, setAccounts] = React.useState([]);
   const connectWallet = async () => {
     try {
       if (!window.ethereum) {
@@ -8,9 +9,10 @@ function ConnectWalletButton({ setAccount }) {
         return;
       }
 
-      const accounts = await window.ethereum.request({
+      let acc = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
+      setAccounts(acc);
       if (accounts.length === 0) {
         console.log("No accounts found");
         return;
@@ -26,7 +28,16 @@ function ConnectWalletButton({ setAccount }) {
     }
   };
 
-  return <button onClick={connectWallet}>Connect Web3 Wallet</button>;
+  return(
+    <div>
+    { 
+      accounts.length === 0 ?
+      <button onClick={connectWallet}>Connect Web3 Wallet</button>
+      :
+      <p>Connected Account: {accounts[0].slice(0, 3)}...${accounts[0].slice(-3)}</p>
+    }
+    </div>
+  ) 
 }
 
 export default ConnectWalletButton;
