@@ -93,8 +93,6 @@ describe("Dxpense", function () {
   });
 
   it("should settle a debt and recalculate debts", async function () {
-    console.log("Alice address:", alice.address);
-    console.log("Bob address:", bob.address);
     await dxpense.connect(alice).AddTrip("Goa Trip", "Alice");
     await dxpense.AddPerson(1, bob.address, "Bob");
     await dxpense.AddExpense(
@@ -105,43 +103,41 @@ describe("Dxpense", function () {
       [alice.address, bob.address]
     );
     const trip = await dxpense.connect(alice).getTrip(1);
-    console.log("Trip before settling debt:", trip);
     const debtId = trip[4][0];
     await dxpense.connect(alice).settleDebt(1, debtId);
     const tripAfter = await dxpense.connect(alice).getTrip(1);
-    console.log("Trip after settling debt:", tripAfter);
     expect(tripAfter[4].length).to.equal(0); // debtIds array should be empty
   });
 
-//   it("should return all trip IDs for a user", async function () {
+  it("should return all trip IDs for a user", async function () {
 
-//     // Alice creates Goa Trip
-//     await dxpense.connect(alice).AddTrip("Goa Trip", "Alice");
-//     await dxpense.connect(alice).AddTrip("Amritsar Trip", "Alice");
-//     // Bob creates Manali Trip
-//     await dxpense.connect(bob).AddTrip("Manali Trip", "Bob");
+    // Alice creates Goa Trip
+    await dxpense.connect(alice).AddTrip("Goa Trip", "Alice");
+    await dxpense.connect(alice).AddTrip("Amritsar Trip", "Alice");
+    // Bob creates Manali Trip
+    await dxpense.connect(bob).AddTrip("Manali Trip", "Bob");
 
 
-//     // For Alice
-//     const aliceTripIds = await dxpense.connect(alice).getUserTripIds();
-//     const aliceTrips = await Promise.all(
-//     aliceTripIds.map((id) => dxpense.connect(alice).getTrip(id))
-//     );
-//     const goaTrip = aliceTrips.find(trip => trip[1] === "Goa Trip");
-//     expect(goaTrip).to.not.be.undefined;
-//     expect(goaTrip[2]).to.include(alice.address);
+    // For Alice
+    const aliceTripIds = await dxpense.connect(alice).getUserTripIds();
+    const aliceTrips = await Promise.all(
+    aliceTripIds.map((id) => dxpense.connect(alice).getTrip(id))
+    );
+    const goaTrip = aliceTrips.find(trip => trip[1] === "Goa Trip");
+    expect(goaTrip).to.not.be.undefined;
+    expect(goaTrip[2]).to.include(alice.address);
 
-//     const amritsarTrip = aliceTrips.find(trip => trip[1] === "Amritsar Trip");
-//     expect(amritsarTrip).to.not.be.undefined;
-//     expect(amritsarTrip[2]).to.include(alice.address);
+    const amritsarTrip = aliceTrips.find(trip => trip[1] === "Amritsar Trip");
+    expect(amritsarTrip).to.not.be.undefined;
+    expect(amritsarTrip[2]).to.include(alice.address);
 
-//     // For Bob
-//     const bobTripIds = await dxpense.connect(bob).getUserTripIds();
-//     const bobTrips = await Promise.all(
-//     bobTripIds.map((id) => dxpense.connect(bob).getTrip(id))
-//     );
-//     const manaliTrip = bobTrips.find(trip => trip[1] === "Manali Trip");
-//     expect(manaliTrip).to.not.be.undefined;
-//     expect(manaliTrip[2]).to.include(bob.address);
-//   });
+    // For Bob
+    const bobTripIds = await dxpense.connect(bob).getUserTripIds();
+    const bobTrips = await Promise.all(
+    bobTripIds.map((id) => dxpense.connect(bob).getTrip(id))
+    );
+    const manaliTrip = bobTrips.find(trip => trip[1] === "Manali Trip");
+    expect(manaliTrip).to.not.be.undefined;
+    expect(manaliTrip[2]).to.include(bob.address);
+  });
 });

@@ -188,7 +188,6 @@ contract Dxpense {
         require(trip_id < trip_id_count, "Trip does not exist");
         Trip storage trip = trips[trip_id];
 
-        uint256[] memory debtIdsCopy = trip.debtIds;
         trip.debtIds = new uint256[](0);
 
         // Calculate new debts
@@ -200,9 +199,7 @@ contract Dxpense {
                 uint256 amount = expense.amount / expense.people_involved.length;
                 bool debtExists = false;
                 for (uint k = 0; k < trip.debtIds.length; k++) {
-                    console.log("Checking debt ID:", trip.debtIds[k]);
                     Debt storage d = debts[trip.debtIds[k]];
-                    console.log("Found debt");
                     if (d.debtor == person && d.creditor == expense.expender) {
                         d.amount += amount;
                         debtExists = true;
@@ -231,7 +228,6 @@ contract Dxpense {
                     }
                 }
                 if (debtExists) continue;
-                console.log("Creating new debt for person:", person);
                 debts[debt_id_count] = Debt(debt_id_count, person, expense.expender, amount);
                 trip.debtIds.push(debt_id_count);
                 debt_id_count++;
