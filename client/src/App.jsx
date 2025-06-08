@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import './App.css'
 import { Routes, Route } from "react-router-dom";
 import NavBar from './components/NavBar'
@@ -7,9 +7,33 @@ import AddExpense from './Pages/AddExpense';
 import AllTrips from './Pages/AllTrips';
 import TripDetails from './Pages/TripDetails';
 import './styles/design-system.css';
+import { initialize_contract } from './components/ContractActions';
 
 function App() {
   const [account, setAccount] = useState(null);
+  const [contract, setContract] = useState(null);
+
+  useEffect(() => {
+    if (!window.ethereum) {
+      alert("Please install MetaMask to use this app.");
+      return;
+    }
+  }, []);
+
+  useEffect(() => {
+    // Initialize the contract when the component mounts
+    const initContract = async () => {
+      try {
+        let contractInstance = await initialize_contract();
+        setContract(contractInstance);
+        console.log('Contract initialized:', contractInstance);
+      } catch (error) {
+        console.error('Error initializing contract:', error);
+      }
+    };
+
+    initContract();
+  }, []);
 
   return (
     <div style={{ 
@@ -25,12 +49,16 @@ function App() {
         width: '100%',
         padding: 'var(--spacing-xl) 0'
       }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/addExpense" element={<AddExpense />} />
-          <Route path="/all-trips" element={<AllTrips />} />
-          <Route path="/trip/:tripId" element={<TripDetails />} />
-        </Routes>
+        {contract ? (
+          <Routes>
+            <Route path="/" element={<Home contract={contract}/>} />
+            <Route path="/addExpense" element={<AddExpense contract={contract}/>} />
+            <Route path="/all-trips" element={<AllTrips contract={contract}/>} />
+            <Route path="/trip/:tripId" element={<TripDetails contract={contract}/>} />
+          </Routes>
+        ) : (
+          <div>Loading contract...</div>
+        )}
       </main>
     </div>
   )

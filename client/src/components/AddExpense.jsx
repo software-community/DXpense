@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/AddExpense.css';
+import { add_expense } from './ContractActions'; 
 
-const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel }) => {
+const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, contract, onCancel }) => {
   const [expenseData, setExpenseData] = useState({
     description: '',
     amount: '',
-    paidBy: trip?.participants[0] || '',
+    paidBy: trip?.people[0]?.person_id || '',
     date: new Date().toISOString().split('T')[0],
     category: 'general',
     splitType: 'equal', // equal, percentage, or custom
@@ -20,7 +21,7 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
         id: expense.id,
         description: expense.description,
         amount: expense.amount.toString(),
-        paidBy: expense.paidBy,
+        paidBy: expense.paidBy.person_id,
         date: expense.date,
         category: expense.category,
         splitType: expense.splitType,
@@ -37,7 +38,7 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
       
       setExpenseData(prev => ({
         ...prev,
-        paidBy: trip.participants[0] || '',
+        paidBy: trip.participants[0].person_id || '',
         participants: initialParticipants
       }));
     }
@@ -102,7 +103,7 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate the form
@@ -111,30 +112,63 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
       return;
     }
 
-    // For percentage split, ensure total is 100%
-    if (expenseData.splitType === 'percentage') {
-      const total = Object.values(expenseData.participants).reduce((sum, val) => sum + val, 0);
-      if (Math.abs(total - 100) > 0.01) {
-        alert('Percentage shares must sum to 100%');
-        return;
-      }
+    try {
+      // Prepare data for smart contract
+      const tripId = trip.trip_id.toString();
+      const amount = Math.round(parseFloat(expenseData.amount)).toString();
+      const name = expenseData.description.toString();
+      const expenderAddress = expenseData.paidBy.toString(); // Adjust as needed
+      // Collect addresses of participants involved
+      const peopleInvolvedAddresses = trip.people.map(p => p.person_id.toString());
+
+      console.log("tripId", tripId, typeof tripId);
+      console.log("amount", amount, typeof amount);
+      console.log("name", name, typeof name);
+      console.log("expenderAddress", expenderAddress, typeof expenderAddress);
+      console.log("peopleInvolvedAddresses", peopleInvolvedAddresses, peopleInvolvedAddresses.map(a => typeof a));
+
+      // Call the contract function
+      const receipt = await add_expense(
+        contract,
+        tripId,
+        amount,
+        name,
+        expenderAddress,
+        peopleInvolvedAddresses
+      );
+
+      alert('Expense added successfully!');
+      console.log('Transaction receipt:', receipt);
+      // if (onExpenseAdded) onExpenseAdded(receipt);
+    } catch (error) {
+      alert('Failed to add expense: ' + (error.reason || error.message));
+      console.error(error);
     }
+
+    // For percentage split, ensure total is 100%
+    // if (expenseData.splitType === 'percentage') {
+    //   const total = Object.values(expenseData.participants).reduce((sum, val) => sum + val, 0);
+    //   if (Math.abs(total - 100) > 0.01) {
+    //     alert('Percentage shares must sum to 100%');
+    //     return;
+    //   }
+    // }
 
     // Create the expense object
-    const expense = {
-      ...expenseData,
-      amount: parseFloat(expenseData.amount),
-      tripId: trip.id
-    };
+    // const expense = {
+    //   ...expenseData,
+    //   amount: parseFloat(expenseData.amount),
+    //   tripId: trip.id
+    // };
 
     // If editing, call the update callback, otherwise call the add callback
-    if (expenseData.id) {
-      onExpenseUpdated(expense);
-    } else {
-      expense.id = Date.now().toString();
-      expense.createdAt = new Date().toISOString();
-      onExpenseAdded(expense);
-    }
+    // if (expenseData.id) {
+    //   onExpenseUpdated(expense);
+    // } else {
+    //   expense.id = Date.now().toString();
+    //   expense.createdAt = new Date().toISOString();
+    //   onExpenseAdded(expense);
+    // }
   };
 
   return (
@@ -178,9 +212,9 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
             onChange={handleInputChange}
             required
           >
-            {trip?.participants.map((participant, index) => (
-              <option key={index} value={participant}>
-                {participant}
+            {trip?.people.map((participant, index) => (
+              <option key={index} value={participant.person_id}>
+                {participant.name}
               </option>
             ))}
           </select>
@@ -215,7 +249,7 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
           </select>
         </div>
 
-        <div className="form-group">
+        {/* <div className="form-group">
           <label htmlFor="splitType">Split Type</label>
           <select
             id="splitType"
@@ -227,20 +261,20 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
             <option value="percentage">Percentage Split</option>
             <option value="custom">Custom Split</option>
           </select>
-        </div>
+        </div> */}
 
-        <div className="participants-split">
+        {/* <div className="participants-split">
           <h3>Split Details</h3>
-          {trip?.participants.map((participant, index) => (
+          {trip?.people.map((participant, index) => (
             <div key={index} className="participant-split-item">
-              <label htmlFor={`participant-${index}`}>{participant}</label>
+              <label htmlFor={`participant-${index}`}>{participant.name}</label>
               {expenseData.splitType === 'percentage' ? (
                 <div className="percentage-input">
                   <input
                     type="number"
                     id={`participant-${index}`}
-                    value={expenseData.participants[participant] || 0}
-                    onChange={(e) => handleParticipantShareChange(participant, e.target.value)}
+                    value={expenseData.participants[participant.name] || 0}
+                    onChange={(e) => handleParticipantShareChange(participant.name, e.target.value)}
                     min="0"
                     max="100"
                     step="0.01"
@@ -251,8 +285,8 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
                 <input
                   type="number"
                   id={`participant-${index}`}
-                  value={expenseData.participants[participant] || 0}
-                  onChange={(e) => handleParticipantShareChange(participant, e.target.value)}
+                  value={expenseData.participants[participant.name] || 0}
+                  onChange={(e) => handleParticipantShareChange(participant.name, e.target.value)}
                   min="0"
                   step="0.01"
                   disabled={expenseData.splitType === 'equal'}
@@ -260,7 +294,7 @@ const AddExpense = ({ trip, expense, onExpenseAdded, onExpenseUpdated, onCancel 
               )}
             </div>
           ))}
-        </div>
+        </div> */}
 
         <div className="form-actions">
           <button type="button" className="btn btn-secondary" onClick={onCancel}>

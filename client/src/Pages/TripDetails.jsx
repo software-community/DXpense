@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import AddExpense from '../components/AddExpense';
 import '../styles/TripDetails.css';
+import { get_trip } from '../components/ContractActions';
 
-const TripDetails = () => {
+const TripDetails = ({contract}) => {
   const { tripId } = useParams();
   const [trip, setTrip] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -22,26 +23,25 @@ const TripDetails = () => {
   useEffect(() => {
     // In a real application, this would fetch trip data from an API
     // For now, we'll simulate fetching data from localStorage
-    const fetchTripDetails = () => {
+    const fetchTripDetails = async () => {
       try {
         setLoading(true);
         // Get trips from localStorage
-        const trips = JSON.parse(localStorage.getItem('trips') || '[]');
-        const foundTrip = trips.find(t => t.id === tripId);
-        
-        if (foundTrip) {
-          setTrip(foundTrip);
+        const trip = await get_trip(contract, tripId);
+        console.log('Fetched trip:', trip);        
+        if (trip) {
+          setTrip(trip);
           
           // Get expenses for this trip from localStorage
-          const allExpenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-          const tripExpenses = allExpenses.filter(e => e.tripId === tripId);
+          const tripExpenses = trip.expenses;
           setExpenses(tripExpenses);
+          console.log('Fetched expenses:', tripExpenses);
           
           // Calculate total expenses and participant balances
-          calculateBalances(foundTrip, tripExpenses);
+          // calculateBalances(trip, tripExpenses);
           
           // Calculate participant transactions
-          calculateParticipantTransactions(foundTrip, tripExpenses);
+          // calculateParticipantTransactions(trip, tripExpenses);
         } else {
           setError('Trip not found');
         }
@@ -56,137 +56,137 @@ const TripDetails = () => {
     fetchTripDetails();
   }, [tripId]);
 
-  const calculateBalances = (tripData, tripExpenses) => {
-    if (!tripData || !tripExpenses) return;
+  // const calculateBalances = (tripData, tripExpenses) => {
+  //   if (!tripData || !tripExpenses) return;
     
-    // Initialize balances for all participants
-    const balances = {};
-    tripData.participants.forEach(participant => {
-      balances[participant] = 0;
-    });
+  //   // Initialize balances for all participants
+  //   const balances = {};
+  //   tripData.participants.forEach(participant => {
+  //     balances[participant] = 0;
+  //   });
     
-    // Calculate balances based on expenses
-    tripExpenses.forEach(expense => {
-      const amount = expense.amount;
-      const paidBy = expense.paidBy;
+  //   // Calculate balances based on expenses
+  //   tripExpenses.forEach(expense => {
+  //     const amount = expense.amount;
+  //     const paidBy = expense.paidBy;
       
-      // Add the full amount to the payer's balance
-      balances[paidBy] += amount;
+  //     // Add the full amount to the payer's balance
+  //     balances[paidBy] += amount;
       
-      // Subtract each participant's share
-      if (expense.splitType === 'equal') {
-        const sharePerPerson = amount / tripData.participants.length;
-        tripData.participants.forEach(participant => {
-          balances[participant] -= sharePerPerson;
-        });
-      } else if (expense.splitType === 'percentage') {
-        // For percentage split, calculate based on percentages
-        Object.entries(expense.participants).forEach(([participant, percentage]) => {
-          const share = (amount * percentage) / 100;
-          balances[participant] -= share;
-        });
-      } else if (expense.splitType === 'custom') {
-        // For custom split, use the exact amounts
-        Object.entries(expense.participants).forEach(([participant, amount]) => {
-          balances[participant] -= amount;
-        });
-      }
-    });
+  //     // Subtract each participant's share
+  //     if (expense.splitType === 'equal') {
+  //       const sharePerPerson = amount / tripData.participants.length;
+  //       tripData.participants.forEach(participant => {
+  //         balances[participant] -= sharePerPerson;
+  //       });
+  //     } else if (expense.splitType === 'percentage') {
+  //       // For percentage split, calculate based on percentages
+  //       Object.entries(expense.participants).forEach(([participant, percentage]) => {
+  //         const share = (amount * percentage) / 100;
+  //         balances[participant] -= share;
+  //       });
+  //     } else if (expense.splitType === 'custom') {
+  //       // For custom split, use the exact amounts
+  //       Object.entries(expense.participants).forEach(([participant, amount]) => {
+  //         balances[participant] -= amount;
+  //       });
+  //     }
+  //   });
     
-    // Update the trip with calculated balances
-    const updatedTrip = {
-      ...tripData,
-      participantBalances: balances,
-      totalExpenses: tripExpenses.reduce((sum, expense) => sum + expense.amount, 0)
-    };
+  //   // Update the trip with calculated balances
+  //   const updatedTrip = {
+  //     ...tripData,
+  //     participantBalances: balances,
+  //     totalExpenses: tripExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+  //   };
     
-    setTrip(updatedTrip);
+  //   setTrip(updatedTrip);
     
-    // Update the trip in localStorage
-    const trips = JSON.parse(localStorage.getItem('trips') || '[]');
-    const updatedTrips = trips.map(t => 
-      t.id === tripId ? updatedTrip : t
-    );
-    localStorage.setItem('trips', JSON.stringify(updatedTrips));
-  };
+  //   // Update the trip in localStorage
+  //   const trips = JSON.parse(localStorage.getItem('trips') || '[]');
+  //   const updatedTrips = trips.map(t => 
+  //     t.id === tripId ? updatedTrip : t
+  //   );
+  //   localStorage.setItem('trips', JSON.stringify(updatedTrips));
+  // };
 
-  const calculateParticipantTransactions = (tripData, tripExpenses) => {
-    if (!tripData || !tripExpenses) return;
+  // const calculateParticipantTransactions = (tripData, tripExpenses) => {
+  //   if (!tripData || !tripExpenses) return;
     
-    // Initialize transactions for all participants
-    const transactions = {};
-    tripData.participants.forEach(participant => {
-      transactions[participant] = {
-        paid: [],
-        owes: [],
-        totalPaid: 0,
-        totalOwes: 0
-      };
-    });
+  //   // Initialize transactions for all participants
+  //   const transactions = {};
+  //   tripData.participants.forEach(participant => {
+  //     transactions[participant] = {
+  //       paid: [],
+  //       owes: [],
+  //       totalPaid: 0,
+  //       totalOwes: 0
+  //     };
+  //   });
     
-    // Calculate transactions based on expenses
-    tripExpenses.forEach(expense => {
-      const amount = expense.amount;
-      const paidBy = expense.paidBy;
+  //   // Calculate transactions based on expenses
+  //   tripExpenses.forEach(expense => {
+  //     const amount = expense.amount;
+  //     const paidBy = expense.paidBy;
       
-      // Add to paid transactions
-      transactions[paidBy].paid.push({
-        id: expense.id,
-        description: expense.description,
-        amount: amount,
-        date: expense.date
-      });
-      transactions[paidBy].totalPaid += amount;
+  //     // Add to paid transactions
+  //     transactions[paidBy].paid.push({
+  //       id: expense.id,
+  //       description: expense.description,
+  //       amount: amount,
+  //       date: expense.date
+  //     });
+  //     transactions[paidBy].totalPaid += amount;
       
-      // Calculate shares for each participant
-      if (expense.splitType === 'equal') {
-        const sharePerPerson = amount / tripData.participants.length;
-        tripData.participants.forEach(participant => {
-          if (participant !== paidBy) {
-            transactions[participant].owes.push({
-              id: expense.id,
-              description: expense.description,
-              amount: sharePerPerson,
-              to: paidBy,
-              date: expense.date
-            });
-            transactions[participant].totalOwes += sharePerPerson;
-          }
-        });
-      } else if (expense.splitType === 'percentage') {
-        // For percentage split, calculate based on percentages
-        Object.entries(expense.participants).forEach(([participant, percentage]) => {
-          if (participant !== paidBy) {
-            const share = (amount * percentage) / 100;
-            transactions[participant].owes.push({
-              id: expense.id,
-              description: expense.description,
-              amount: share,
-              to: paidBy,
-              date: expense.date
-            });
-            transactions[participant].totalOwes += share;
-          }
-        });
-      } else if (expense.splitType === 'custom') {
-        // For custom split, use the exact amounts
-        Object.entries(expense.participants).forEach(([participant, amount]) => {
-          if (participant !== paidBy) {
-            transactions[participant].owes.push({
-              id: expense.id,
-              description: expense.description,
-              amount: amount,
-              to: paidBy,
-              date: expense.date
-            });
-            transactions[participant].totalOwes += amount;
-          }
-        });
-      }
-    });
+  //     // Calculate shares for each participant
+  //     if (expense.splitType === 'equal') {
+  //       const sharePerPerson = amount / tripData.participants.length;
+  //       tripData.participants.forEach(participant => {
+  //         if (participant !== paidBy) {
+  //           transactions[participant].owes.push({
+  //             id: expense.id,
+  //             description: expense.description,
+  //             amount: sharePerPerson,
+  //             to: paidBy,
+  //             date: expense.date
+  //           });
+  //           transactions[participant].totalOwes += sharePerPerson;
+  //         }
+  //       });
+  //     } else if (expense.splitType === 'percentage') {
+  //       // For percentage split, calculate based on percentages
+  //       Object.entries(expense.participants).forEach(([participant, percentage]) => {
+  //         if (participant !== paidBy) {
+  //           const share = (amount * percentage) / 100;
+  //           transactions[participant].owes.push({
+  //             id: expense.id,
+  //             description: expense.description,
+  //             amount: share,
+  //             to: paidBy,
+  //             date: expense.date
+  //           });
+  //           transactions[participant].totalOwes += share;
+  //         }
+  //       });
+  //     } else if (expense.splitType === 'custom') {
+  //       // For custom split, use the exact amounts
+  //       Object.entries(expense.participants).forEach(([participant, amount]) => {
+  //         if (participant !== paidBy) {
+  //           transactions[participant].owes.push({
+  //             id: expense.id,
+  //             description: expense.description,
+  //             amount: amount,
+  //             to: paidBy,
+  //             date: expense.date
+  //           });
+  //           transactions[participant].totalOwes += amount;
+  //         }
+  //       });
+  //     }
+  //   });
     
-    setParticipantTransactions(transactions);
-  };
+  //   setParticipantTransactions(transactions);
+  // };
 
   const handleAddExpense = (expense) => {
     // Add tripId to the expense
@@ -205,10 +205,10 @@ const TripDetails = () => {
     localStorage.setItem('expenses', JSON.stringify(allExpenses));
     
     // Recalculate balances
-    calculateBalances(trip, updatedExpenses);
+    // calculateBalances(trip, updatedExpenses);
     
-    // Recalculate participant transactions
-    calculateParticipantTransactions(trip, updatedExpenses);
+    // // Recalculate participant transactions
+    // calculateParticipantTransactions(trip, updatedExpenses);
     
     // Hide the add expense form
     setShowAddExpense(false);
@@ -233,7 +233,7 @@ const TripDetails = () => {
     calculateBalances(trip, updatedExpenses);
     
     // Recalculate participant transactions
-    calculateParticipantTransactions(trip, updatedExpenses);
+    // calculateParticipantTransactions(trip, updatedExpenses);
     
     // Hide the add expense form
     setShowAddExpense(false);
@@ -252,10 +252,10 @@ const TripDetails = () => {
       localStorage.setItem('expenses', JSON.stringify(updatedAllExpenses));
       
       // Recalculate balances
-      calculateBalances(trip, updatedExpenses);
+      // calculateBalances(trip, updatedExpenses);
       
-      // Recalculate participant transactions
-      calculateParticipantTransactions(trip, updatedExpenses);
+      // // Recalculate participant transactions
+      // calculateParticipantTransactions(trip, updatedExpenses);
     }
   };
 
@@ -512,9 +512,10 @@ const TripDetails = () => {
           expense={editingExpense}
           onExpenseAdded={handleAddExpense} 
           onExpenseUpdated={handleUpdateExpense}
+          contract={contract}
           onCancel={() => {
             setShowAddExpense(false);
-            setEditingExpense(null);
+            setEditingExpense(null); 
           }} 
         />
       ) : (
@@ -523,16 +524,8 @@ const TripDetails = () => {
             <h2>Trip Information</h2>
             <div className="trip-info-grid">
               <div className="trip-info-item">
-                <span className="trip-info-label">Date</span>
-                <span className="trip-info-value">{trip.date}</span>
-              </div>
-              <div className="trip-info-item">
-                <span className="trip-info-label">Created</span>
-                <span className="trip-info-value">{trip.createdAt}</span>
-              </div>
-              <div className="trip-info-item">
                 <span className="trip-info-label">Participants</span>
-                <span className="trip-info-value">{trip.participants.length}</span>
+                <span className="trip-info-value">{trip.people.length}</span>
               </div>
               <div className="trip-info-item">
                 <span className="trip-info-label">Total Expenses</span>
@@ -645,23 +638,23 @@ const TripDetails = () => {
                 <thead>
                   <tr>
                     <th>Participant</th>
-                    <th>Total Paid</th>
+                    {/* <th>Total Paid</th>
                     <th>Total Owes</th>
                     <th>Balance</th>
-                    <th>Transactions</th>
-                    {trip.status !== 'settled' && <th>Actions</th>}
+                    <th>Transactions</th> */}
+                    {/* {trip.status !== 'settled' && <th>Actions</th>} */}
                   </tr>
                 </thead>
                 <tbody>
-                  {trip.participants.map((participant, index) => (
+                  {trip.people.map((participant, index) => (
                     <tr key={index} className="participant-row">
                       <td className="participant-name-cell">
                         <div className="participant-avatar">
-                          {participant.charAt(0).toUpperCase()}
+                          {participant.name.charAt(0).toUpperCase()}
                         </div>
-                        <span>{participant}</span>
+                        <span>{participant.name}</span>
                       </td>
-                      <td className="participant-paid-cell">
+                      {/* <td className="participant-paid-cell">
                         ${participantTransactions[participant]?.totalPaid.toFixed(2) || 0}
                       </td>
                       <td className="participant-owes-cell">
@@ -721,7 +714,7 @@ const TripDetails = () => {
                             </svg>
                           </button>
                         </td>
-                      )}
+                      )} */}
                     </tr>
                   ))}
                 </tbody>
@@ -736,7 +729,7 @@ const TripDetails = () => {
                 {expenses.map((expense, index) => (
                   <div key={index} className="expense-card">
                     <div className="expense-header">
-                      <h3 className="expense-description">{expense.description}</h3>
+                      <h3 className="expense-description">{expense.name}</h3>
                       <div className="expense-actions">
                         <span className="expense-amount">${expense.amount.toFixed(2)}</span>
                         {trip.status !== 'settled' && (
@@ -767,17 +760,11 @@ const TripDetails = () => {
                     </div>
                     <div className="expense-details">
                       <div className="expense-paid-by">
-                        Paid by: <span>{expense.paidBy}</span>
+                        Paid by: <span>{expense.expender}</span>
                       </div>
-                      <div className="expense-date">
-                        Date: <span>{new Date(expense.date).toLocaleDateString()}</span>
-                      </div>
-                      <div className="expense-category">
-                        Category: <span>{expense.category}</span>
-                      </div>
-                      <div className="expense-split">
+                      {/* <div className="expense-split">
                         Split: <span>{expense.splitType}</span>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 ))}

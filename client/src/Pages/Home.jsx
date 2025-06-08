@@ -2,21 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import CreateTrip from '../components/CreateTrip';
 import '../styles/Home.css';
+import { initialize_contract, get_names, get_trips } from '../components/ContractActions';
 
-const Home = () => {
+const Home = ({contract}) => {
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Fetch trips from localStorage
-    const fetchTrips = () => {
+
+    const fetchTrips = async() => {
+      if(!contract) {
+        console.warn('Contract not initialized yet, skipping trip fetch.');
+        return;
+      }
       try {
-        const storedTrips = JSON.parse(localStorage.getItem('trips') || '[]');
-        // Sort trips by date (newest first)
-        const sortedTrips = [...storedTrips].sort((a, b) => 
-          new Date(b.createdAt) - new Date(a.createdAt)
-        );
-        setTrips(sortedTrips);
+        const storedTrips = await get_trips(contract);
+        console.log('Fetched trips:', storedTrips);
+        setTrips(storedTrips);
       } catch (error) {
         console.error('Error fetching trips:', error);
         setTrips([]);
@@ -26,7 +29,7 @@ const Home = () => {
     };
 
     fetchTrips();
-  }, []);
+  }, [contract]);
 
   // Get the 3 most recent trips
   const recentTrips = trips.slice(0, 3);
@@ -51,23 +54,19 @@ const Home = () => {
         ) : recentTrips.length > 0 ? (
           <div className="trips-grid">
             {recentTrips.map((trip) => (
-              <Link to={`/trip/${trip.id}`} key={trip.id} className="trip-card">
+              <Link to={`/trip/${trip.trip_id}`} key={trip.trip_id} className="trip-card">
                 <div className="trip-card-header">
                   <h3 className="trip-name">{trip.name}</h3>
                   <span className={`trip-status ${trip.status}`}>
-                    {trip.status === 'settled' ? 'Settled' : 'Active'}
+                    {trip.debts.length === 0 ? 'Settled' : 'Active'}
                   </span>
                 </div>
                 <div className="trip-card-content">
                   <div className="trip-info">
-                    <span className="trip-date">{trip.date}</span>
                     <span className="trip-participants">
-                      {trip.participants.length} {trip.participants.length === 1 ? 'participant' : 'participants'}
+                      {trip.people.length} {trip.people.length === 1 ? 'participant' : 'participants'}
                     </span>
                   </div>
-                  {trip.description && (
-                    <p className="trip-description">{trip.description}</p>
-                  )}
                 </div>
               </Link>
             ))}
