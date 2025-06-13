@@ -1,5 +1,3 @@
-import "hardhat/console.sol"; // For debugging purposes, can be removed in production
-
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.0;
 
@@ -43,20 +41,10 @@ contract Dxpense {
     mapping(uint256 => Debt) public debts;
     mapping(address => Person) public people; // address => Person
 
-    // For testing
-    constructor() {
-        owner = msg.sender;
-        // Add test people
-        people[0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266] = Person(0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266, "Bob");
-        people[0x0987654321098765432109876543210987654321] = Person(0x0987654321098765432109876543210987654321, "Alice");
-        // Add test trip
-        address[] memory testPeople = new address[](2);
-        testPeople[0] = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-        testPeople[1] = 0x0987654321098765432109876543210987654321;
-        trips[trip_id_count] = Trip(trip_id_count, "Test Trip", testPeople, new uint256[](0), new uint256[](0));
-        trip_id_count++;
-    }
-
+    event TripCreated(uint256 indexed tripId, address indexed owner, string tripName);
+    event PersonAdded(uint256 indexed tripId, address indexed person, string name);
+    event ExpenseAdded(uint256 indexed tripId, uint256 indexed expenseId, address indexed expender, uint256 amount, string name);
+    event DebtSettled(uint256 indexed tripId, uint256 indexed debtId, address debtor, address creditor, uint256 amount);
     // Add a new trip
     function AddTrip(string calldata trip_name, string calldata owner_name) public {
         require(bytes(trip_name).length > 0, "Trip name required");
@@ -68,6 +56,7 @@ contract Dxpense {
         address[] memory temp_people = new address[](1);
         temp_people[0] = msg.sender;
         trips[trip_id_count] = Trip(trip_id_count, trip_name, temp_people, new uint256[](0), new uint256[](0));
+        emit TripCreated(trip_id_count, msg.sender, trip_name);
         trip_id_count++;
     }
 
@@ -86,6 +75,7 @@ contract Dxpense {
             }
         }
         tripPeople.push(p_address);
+        emit PersonAdded(trip_id, p_address, p_name);
     }
 
     // Add an expense to a trip
@@ -121,6 +111,7 @@ contract Dxpense {
         expenses[expense_id_count] = Expense(expense_id_count, e_amount, trip_id, e_name, exp_addr, e_involved);
         trips[trip_id].expenseIds.push(expense_id_count);
         expense_id_count++;
+        emit ExpenseAdded(trip_id, expense_id_count - 1, exp_addr, e_amount, e_name);
         calculateDebts(trip_id);
     }
 
@@ -184,6 +175,14 @@ contract Dxpense {
         return (p.person_id, p.name);
     }
 
+    function getDebt(uint256 debt_id) public view returns (
+        uint256, address, address, uint256
+    ) {
+        require(debt_id < debt_id_count, "Debt does not exist");
+        Debt storage d = debts[debt_id];
+        return (d.debt_id, d.debtor, d.creditor, d.amount);
+    }
+
     function calculateDebts(uint256 trip_id) public {
         require(trip_id < trip_id_count, "Trip does not exist");
         Trip storage trip = trips[trip_id];
@@ -193,8 +192,8 @@ contract Dxpense {
         // Calculate new debts
         for (uint i = 0; i < trip.expenseIds.length; i++) {
             Expense storage expense = expenses[trip.expenseIds[i]];
-            for (uint j = 0; j < trip.people.length; j++) {
-                address person = trip.people[j];
+            for (uint j = 0; j < expense.people_involved.length; j++) {
+                address person = expense.people_involved[j];
                 if (person == expense.expender) continue;
                 uint256 amount = expense.amount / expense.people_involved.length;
                 bool debtExists = false;
@@ -253,8 +252,9 @@ contract Dxpense {
         expenses[expense_id_count] = Expense(expense_id_count, e_amount, trip_id, e_name, temp_person, temp_people_involved);
         trip.expenseIds.push(expense_id_count);
         expense_id_count++;
-
+        
         calculateDebts(trip_id);
+        emit DebtSettled(trip_id, debt_id, temp_debt.debtor, temp_debt.creditor, e_amount);
     }
 
     // Add, calculate, and settle debts can be similarly refactored to use IDs and mappings
