@@ -63,6 +63,15 @@ contract Dxpense {
     // Add a person to a trip
     function AddPerson(uint256 trip_id, address p_address, string calldata p_name) public {
         require(trip_id < trip_id_count, "Trip does not exist");
+        Trip storage trip = trips[trip_id];
+        bool isInvolved = false;
+        for (uint i = 0; i < trip.people.length; i++) {
+            if (trip.people[i] == msg.sender) {
+                isInvolved = true;
+                break;
+            }
+        }
+        require(isInvolved, "Only trip participants can add a person.");
         // Register the person if not already
         if (bytes(people[p_address].name).length == 0) {
             people[p_address] = Person(p_address, p_name);
@@ -88,6 +97,7 @@ contract Dxpense {
     ) public {
         require(trip_id < trip_id_count, "Trip does not exist");
         require(e_involved.length > 0, "At least one participant required");
+        require(msg.sender == exp_addr, "Only the expender can add expense");
         // Check expender is in trip
         bool expenderInTrip = false;
         for (uint i = 0; i < trips[trip_id].people.length; i++) {
@@ -242,6 +252,7 @@ contract Dxpense {
 
         Debt storage temp_debt = debts[debt_id];
         require(temp_debt.amount > 0, "Debt already settled or does not exist");
+        require(temp_debt.creditor == msg.sender, "Only creditor can settle debt");
 
         uint256 e_amount = temp_debt.amount;
         string memory e_name = "Debt Settlement";
