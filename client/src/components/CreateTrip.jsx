@@ -2,14 +2,21 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/design-system.css';
 import '../styles/CreateTrip.css';
+import { add_trip, add_person } from './ContractActions';
+import { isAddress } from 'ethers'
+import Lock from '../Lock.json'; 
 
-const CreateTrip = () => {
+const CreateTrip = ({ contract, account }) => {
   const navigate = useNavigate();
   const [tripName, setTripName] = useState('');
   const [participants, setParticipants] = useState([]);
-  const [newParticipant, setNewParticipant] = useState('');
+  const [newParticipantName, setNewParticipantName] = useState('');
+  const [newParticipantAddress, setNewParticipantAddress] = useState('');
   const [tripDate, setTripDate] = useState('');
   const [tripDescription, setTripDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [ownerName, setOwnerName] = useState('');
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -19,57 +26,93 @@ const CreateTrip = () => {
     return `${day}/${month}/${year}`;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Create a new trip object
-    const newTrip = {
-      id: Date.now().toString(), // Simple unique ID
-      name: tripName,
-      date: formatDate(tripDate),
-      description: tripDescription,
-      participants: participants,
-      status: 'active',
-      createdAt: new Date().toLocaleDateString(),
-      totalExpenses: 0,
-      participantBalances: {},
-      expenses: []
-    };
-    
-    // Get existing trips from localStorage
-    const existingTrips = JSON.parse(localStorage.getItem('trips') || '[]');
-    
-    // Add the new trip to the array
-    const updatedTrips = [...existingTrips, newTrip];
-    
-    // Save back to localStorage
-    localStorage.setItem('trips', JSON.stringify(updatedTrips));
-    
-    // Redirect to the trip details page
-    navigate(`/trip/${newTrip.id}`);
-  };
-
   const handleAddParticipant = (e) => {
     e.preventDefault();
-    if (newParticipant.trim()) {
-      setParticipants([...participants, newParticipant.trim()]);
-      setNewParticipant('');
+    if (!isAddress(newParticipantAddress.trim())) {
+      setError('Invalid Ethereum address.');
+      return;
     }
+    if (!newParticipantName.trim() || !newParticipantAddress.trim()) {
+      setError('Both name and address are required.');
+      return;
+    }
+    setParticipants([
+      ...participants,
+      { name: newParticipantName.trim(), address: newParticipantAddress.trim() }
+    ]);
+    setNewParticipantName('');
+    setNewParticipantAddress('');
+    setError('');
   };
 
   const removeParticipant = (index) => {
     setParticipants(participants.filter((_, i) => i !== index));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      if (!contract) {
+        setError('Smart contract not connected.');
+        setLoading(false);
+        return;
+      }
+      if (!tripName.trim()) {
+        setError('Trip name is required.');
+        setLoading(false);
+        return;
+      }
+      if (!ownerName.trim()) {
+        setError('Owner name is required.');
+        setLoading(false);
+        return;
+      }
+      const receipt = await add_trip(contract, tripName, ownerName);
+
+    // Extract the tripId from the TripCreated event
+    let tripId;
+    for (const log of receipt.logs) {
+      try {
+        const parsed = contract.interface.parseLog(log);
+        if (parsed.name === "TripCreated") {
+          tripId = parsed.args.tripId.toString();
+          break;
+        }
+      } catch (err) {
+        // Not this event, skip
+      }
+    }
+
+    if (!tripId) {
+      setError('Could not determine new trip ID.');
+      setLoading(false);
+      return;
+    }
+
+    // Add each participant to the trip
+    for (const participant of participants) {
+      await add_person(contract, tripId, participant.address, participant.name);
+    }
+
+      // Add participants after trip creation (code for this will be added in the next step)
+      navigate('/all-trips');
+    } catch (err) {
+      setError('Failed to create trip: ' + (err?.message || err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="card create-trip-card">
       <div className="create-trip-accent-bar"></div>
-      
       <div className="create-trip-header">
         <div className="create-trip-icon">+</div>
         <h2 className="create-trip-title">Create a New Trip</h2>
       </div>
-      
       <form onSubmit={handleSubmit} className="create-trip-form">
         <div className="form-field-full">
           <label htmlFor="tripName" className="form-label">
@@ -82,6 +125,21 @@ const CreateTrip = () => {
             onChange={(e) => setTripName(e.target.value)}
             className="input form-input"
             placeholder="Enter trip name..."
+            required
+          />
+        </div>
+
+        <div className="form-field-full">
+          <label htmlFor="ownerName" className="form-label">
+            Owner Name
+          </label>
+          <input
+            id="ownerName"
+            type="text"
+            value={ownerName}
+            onChange={e => setOwnerName(e.target.value)}
+            className="input form-input"
+            placeholder="Enter your name..."
             required
           />
         </div>
@@ -101,17 +159,21 @@ const CreateTrip = () => {
         </div>
 
         <div>
-          <label htmlFor="participants" className="form-label">
-            Add Participants
-          </label>
-          <div className="participant-input-container">
+          <label className="form-label">Add Participants</label>
+          <div className="participant-input-container" style={{ display: 'flex', gap: '8px' }}>
             <input
-              id="participants"
               type="text"
-              value={newParticipant}
-              onChange={(e) => setNewParticipant(e.target.value)}
+              value={newParticipantName}
+              onChange={(e) => setNewParticipantName(e.target.value)}
               className="input form-input"
-              placeholder="Add participant..."
+              placeholder="Name"
+            />
+            <input
+              type="text"
+              value={newParticipantAddress}
+              onChange={(e) => setNewParticipantAddress(e.target.value)}
+              className="input form-input"
+              placeholder="Address"
             />
             <button
               type="button"
@@ -145,7 +207,7 @@ const CreateTrip = () => {
             <div className="participants-list">
               {participants.map((participant, index) => (
                 <span key={index} className="participant-tag">
-                  {participant}
+                  {participant.name} ({participant.address})
                   <button
                     type="button"
                     onClick={() => removeParticipant(index)}
@@ -159,9 +221,11 @@ const CreateTrip = () => {
           </div>
         )}
 
+        {error && <div className="error-message">{error}</div>}
+
         <div className="submit-button-container">
-          <button type="submit" className="btn btn-primary submit-button">
-            <span>Create Trip</span>
+          <button type="submit" className="btn btn-primary submit-button" disabled={loading}>
+            <span>{loading ? "Creating..." : "Create Trip"}</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
