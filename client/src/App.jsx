@@ -12,6 +12,7 @@ import { initialize_contract } from './components/ContractActions';
 function App() {
   const [account, setAccount] = useState(null);
   const [contract, setContract] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!window.ethereum) {
@@ -20,20 +21,40 @@ function App() {
     }
   }, []);
 
-  useEffect(() => {
-    // Initialize the contract when the component mounts
-    const initContract = async () => {
-      try {
-        let contractInstance = await initialize_contract();
+useEffect(() => {
+  const autoConnect = async () => {
+    setLoading(true);
+    if (window.ethereum) {
+      const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+      if (accounts.length > 0) {
+        setAccount(accounts[0]);
+        const contractInstance = await initialize_contract();
         setContract(contractInstance);
-        console.log('Contract initialized:', contractInstance);
-      } catch (error) {
-        console.error('Error initializing contract:', error);
       }
-    };
+    }
+    setLoading(false);
+  };
+  autoConnect();
+}, []);
 
-    initContract();
-  }, []);
+useEffect(() => {
+  if (window.ethereum) {
+    const handleAccountsChanged = (accounts) => {
+      setAccount(accounts[0] || null);
+      // Optionally re-initialize contract or reload data here
+    };
+    window.ethereum.on('accountsChanged', handleAccountsChanged);
+
+    // Cleanup on unmount
+    return () => {
+      window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+    };
+  }
+}, []);
+
+if (loading) {
+  return <div>Loading...</div>;
+}
 
   return (
     <div style={{ 
@@ -49,12 +70,12 @@ function App() {
         width: '100%',
         padding: 'var(--spacing-xl) 0'
       }}>
-        {contract ? (
+        {contract && account ? (
           <Routes>
-            <Route path="/" element={<Home contract={contract}/>} />
-            <Route path="/addExpense" element={<AddExpense contract={contract}/>} />
-            <Route path="/all-trips" element={<AllTrips contract={contract}/>} />
-            <Route path="/trip/:tripId" element={<TripDetails contract={contract}/>} />
+            <Route path="/" element={<Home contract={contract} account={account}/>} />
+            <Route path="/addExpense" element={<AddExpense contract={contract} account={account}/>} />
+            <Route path="/all-trips" element={<AllTrips contract={contract} account={account}/>} />
+            <Route path="/trip/:tripId" element={<TripDetails contract={contract} account={account}/>} />
           </Routes>
         ) : (
           <div>Loading contract...</div>

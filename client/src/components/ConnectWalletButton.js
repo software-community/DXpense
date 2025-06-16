@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function ConnectWalletButton({ setAccount }) {
+function ConnectWalletButton({ account, setAccount }) {
   const [currentAccount, setCurrentAccount] = useState(null);
 
   const connectWallet = async () => {
@@ -33,9 +33,9 @@ function ConnectWalletButton({ setAccount }) {
 
   return (
     <div>
-      {currentAccount ? (
+      {account ? (
         <b>
-          Connected Account: {truncateAccount(currentAccount)}
+          Connected Account: {truncateAccount(account)}
         </b>
       ) : (
         <button onClick={connectWallet}>Connect Web3 Wallet</button>
