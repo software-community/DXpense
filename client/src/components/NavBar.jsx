@@ -32,7 +32,7 @@ const NavBar = ({ account, setAccount }) => {
           >
             Active Trips
           </Link>
-          <ConnectWalletButton setAccount={setAccount} />
+          <ConnectWalletButton account={account} setAccount={setAccount} />
         </div>
       </div>
     </nav>

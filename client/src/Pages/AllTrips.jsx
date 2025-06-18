@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/AllTrips.css';
+import { get_user_trip_ids, get_trip } from '../components/ContractActions';
 
-const AllTrips = () => {
+const AllTrips = ({ contract, account }) => {
   const navigate = useNavigate();
   const [trips, setTrips] = useState([]);
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'settled'
@@ -11,15 +12,34 @@ const AllTrips = () => {
   const [tripToDelete, setTripToDelete] = useState(null);
 
   useEffect(() => {
-    // Fetch trips from localStorage
-    const fetchTrips = () => {
+    const fetchTrips = async () => {
+      if (!contract) {
+        setTrips([]);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
       try {
-        const storedTrips = JSON.parse(localStorage.getItem('trips') || '[]');
-        // Sort trips by date (newest first)
-        const sortedTrips = [...storedTrips].sort((a, b) => 
-          new Date(b.createdAt) - new Date(a.createdAt)
+        const tripIds = await get_user_trip_ids(contract);
+        const tripDetails = await Promise.all(
+          tripIds.map(async (id) => {
+            const trip = await get_trip(contract, id);
+            // trip: [trip_id, name, people[], expenseIds[], debtIds[]]
+            return {
+              id: trip[0].toString(),
+              name: trip[1],
+              participants: trip[2],
+              expenseIds: trip[3],
+              debts: trip[4],
+              status: trip[4].length === 0 ? 'settled' : 'active',
+              date: '', // If you want to add a date, you can extend your contract
+              description: '', // If you want to add a description, you can extend your contract
+            };
+          })
         );
-        setTrips(sortedTrips);
+        // Sort by trip id (newest first)
+        tripDetails.sort((a, b) => Number(b.id) < Number(a.id) ? 1 : -1);
+        setTrips(tripDetails);
       } catch (error) {
         console.error('Error fetching trips:', error);
         setTrips([]);
@@ -29,7 +49,7 @@ const AllTrips = () => {
     };
 
     fetchTrips();
-  }, []);
+  }, [contract, account]);
 
   // Filter trips based on selected filter
   const filteredTrips = trips.filter(trip => {
@@ -37,29 +57,8 @@ const AllTrips = () => {
     return trip.status === filter;
   });
 
-  const handleDeleteClick = (e, trip) => {
-    e.preventDefault(); // Prevent navigation to trip details
-    setTripToDelete(trip);
-    setShowDeletePrompt(true);
-  };
-
-  const handleDeleteTrip = () => {
-    if (!tripToDelete) return;
-
-    // Remove trip from localStorage
-    const updatedTrips = trips.filter(t => t.id !== tripToDelete.id);
-    localStorage.setItem('trips', JSON.stringify(updatedTrips));
-    
-    // Remove trip's expenses from localStorage
-    const allExpenses = JSON.parse(localStorage.getItem('expenses') || '[]');
-    const updatedExpenses = allExpenses.filter(expense => expense.tripId !== tripToDelete.id);
-    localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-    
-    // Update state
-    setTrips(updatedTrips);
-    setShowDeletePrompt(false);
-    setTripToDelete(null);
-  };
+  // Delete functionality is not supported on-chain, so we just hide the button
+  // and remove localStorage logic.
 
   return (
     <div className="all-trips-container">
@@ -96,31 +95,6 @@ const AllTrips = () => {
         </div>
       </div>
 
-      {showDeletePrompt && tripToDelete && (
-        <div className="delete-trip-prompt">
-          <h3>Delete Trip?</h3>
-          <p>Are you sure you want to delete <strong>{tripToDelete.name}</strong>?</p>
-          <p className="warning-text">This will permanently delete the trip and all its expenses. This action cannot be undone.</p>
-          <div className="prompt-actions">
-            <button 
-              className="btn btn-secondary"
-              onClick={() => {
-                setShowDeletePrompt(false);
-                setTripToDelete(null);
-              }}
-            >
-              Cancel
-            </button>
-            <button 
-              className="btn btn-danger"
-              onClick={handleDeleteTrip}
-            >
-              Delete Trip
-            </button>
-          </div>
-        </div>
-      )}
-
       {loading ? (
         <div className="loading-message">Loading trips...</div>
       ) : filteredTrips.length > 0 ? (
@@ -150,12 +124,7 @@ const AllTrips = () => {
                   >
                     View Details
                   </Link>
-                  <button 
-                    className="btn btn-danger"
-                    onClick={(e) => handleDeleteClick(e, trip)}
-                  >
-                    Delete Trip
-                  </button>
+                  {/* Delete is not supported on-chain */}
                 </div>
               </div>
             </div>
@@ -178,4 +147,4 @@ const AllTrips = () => {
   );
 };
 
-export default AllTrips; 
+export default AllTrips;

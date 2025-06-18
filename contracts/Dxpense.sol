@@ -45,6 +45,11 @@ contract Dxpense {
     event PersonAdded(uint256 indexed tripId, address indexed person, string name);
     event ExpenseAdded(uint256 indexed tripId, uint256 indexed expenseId, address indexed expender, uint256 amount, string name);
     event DebtSettled(uint256 indexed tripId, uint256 indexed debtId, address debtor, address creditor, uint256 amount);
+
+    constructor() {
+        owner = msg.sender;
+    }
+
     // Add a new trip
     function AddTrip(string calldata trip_name, string calldata owner_name) public {
         require(bytes(trip_name).length > 0, "Trip name required");
